@@ -3,39 +3,51 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button } from 'react-native-elements';
 
 const colors = ['#FF0000', '#FFFF00', '#008000', '#0000FF'];
+const MAX_DOT_COUNT = 3;
+
+let interval;
 
 export default class Concentration extends React.Component {
-  constructor  () {
+  constructor() {
     super();
     this.state = {
-      color: colors[Math.floor(Math.random() * Math.floor(colors.length - 1))],
-      dotCount: Math.floor(Math.random() * Math.floor(4)),
+      color: colors[this.getRandomValue(colors.length - 1)],
+      dotCount: this.getRandomValue(MAX_DOT_COUNT + 1),
       beforeShape: {},
-      point: 0
+      point: 0,
     }
   }
 
   componentWillMount () {
-    let interval = setInterval(() => { 
-      this.changeColorAndDotCount();
-    }, 4000);
+    this.timer();
   }
 
+  timer = () => {
+    interval = setInterval(() => { 
+      this.changeColorAndDotCount();
+    }, 4000);
+  };
+
+  getRandomValue = count => {
+    return Math.floor(Math.random() * Math.floor(count));
+  };
+
   changeColorAndDotCount = () => {
+    const { color, dotCount } = this.state;
     this.setState({
-      beforeShape: {'color': this.state.color, 'dotCount': this.state.dotCount},
-      color: colors[Math.floor(Math.random() * Math.floor(colors.length - 1))],
-      dotCount: Math.floor(Math.random() * Math.floor(4)),
+      beforeShape: { color, dotCount },
+      color: colors[this.getRandomValue(colors.length - 1)],
+      dotCount: this.getRandomValue(MAX_DOT_COUNT + 1),
     })
   };
 
-  onClick = (buttonType) => {
+  onClick = buttonType => {
     const { beforeShape, color, dotCount } = this.state;
 
     this.setState({
-      beforeShape: {'color': this.state.color, 'dotCount': this.state.dotCount},
-      color: colors[Math.floor(Math.random() * Math.floor(colors.length - 1))],
-      dotCount: Math.floor(Math.random() * Math.floor(4)),
+      beforeShape: { color, dotCount },
+      color: colors[this.getRandomValue(colors.length - 1)],
+      dotCount: this.getRandomValue(MAX_DOT_COUNT + 1),
     },() => {
       if (beforeShape.color === color && buttonType === 'color') {
         this.setPoint();
@@ -45,6 +57,9 @@ export default class Concentration extends React.Component {
         this.setPoint();
       }
     });
+
+    clearInterval(interval);
+    this.timer();
   };
 
   setPoint = () => {
@@ -53,7 +68,7 @@ export default class Concentration extends React.Component {
     })
   };
 
-  renderDotShape = (styles) => {
+  renderDotShape = styles => {
     const { dotCount } = this.state;
     const dotView = [];
 
@@ -66,6 +81,7 @@ export default class Concentration extends React.Component {
   };
 
   render() {
+    const { color, beforeShape, point } = this.state;
     const styles = StyleSheet.create({
       container: {
         flex: 1,
@@ -83,7 +99,7 @@ export default class Concentration extends React.Component {
         borderBottomWidth: 100,
         borderLeftColor: 'transparent',
         borderRightColor: 'transparent',
-        borderBottomColor: `${this.state.color}`,
+        borderBottomColor: `${color}`,
         marginBottom: 20,
       },
       dot1: {
@@ -111,6 +127,9 @@ export default class Concentration extends React.Component {
         position: 'relative',
         top: 50,
         right: 10
+      },
+      point: {
+        marginTop: 10,
       }
     });
     return (
@@ -118,7 +137,7 @@ export default class Concentration extends React.Component {
         <View style={styles.triangle}>
           {this.renderDotShape(styles)}
         </View>
-        { Object.keys(this.state.beforeShape).length > 0 &&
+        { Object.keys(beforeShape).length > 0 &&
           <View  style={{flexDirection:'row'}}>
             <Button
               onPress={this.onClick.bind(this,'dot')}
@@ -158,7 +177,7 @@ export default class Concentration extends React.Component {
             />
           </View>
         }
-          <Text>{this.state.point}</Text>
+          <Text style={styles.point}>Point: {point}</Text>
       </View>
     );
   }
